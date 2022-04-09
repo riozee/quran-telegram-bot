@@ -211,4 +211,106 @@ bot.on('callback_query', async (ctx) => {
 		await bot.telegram.sendMessage(process.env.OWNER_USER_ID!, String(e));
 	}
 });
+bot.on('inline_query', async (ctx) => {
+	try {
+		const text = ctx.inlineQuery.query;
+		if (!text) return;
+		const [_surah, _ayat] = text.split(':').map((v) =>
+			v
+				.trim()
+				.toLowerCase()
+				.replace(/[^a-z0-9]/g, '')
+		);
+		const surah = new Surah(_surah, _ayat);
+		if (surah.ok) {
+			const results = [
+				{
+					type: 'article',
+					id: `arabic,${surah.surah_number}:${surah.ayat_number}`,
+					title: `Arab (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+					description: surah.arabic_text!.slice(0, 100) + ' ...',
+					input_message_content: {
+						message_text: surah.arabic_text!,
+					},
+				},
+			];
+			if (surah.translation_text!.length > 1096) {
+				const _chunk = chunk(surah.translation_text!, 1096).map((v) => v.join(''));
+				_chunk.forEach((v, i) => {
+					results.push({
+						type: 'article',
+						id: `translation,${surah.surah_number}:${surah.ayat_number}#${i + 1}`,
+						title: `Terjemahan Halaman ${i + 1} (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+						description: v.slice(0, 100) + ' ...',
+						input_message_content: {
+							message_text: v,
+						},
+					});
+				});
+			} else {
+				results.push({
+					type: 'article',
+					id: `translation,${surah.surah_number}:${surah.ayat_number}`,
+					title: `Terjemahan (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+					description: surah.translation_text!.slice(0, 100) + ' ...',
+					input_message_content: {
+						message_text: surah.translation_text!,
+					},
+				});
+			}
+
+			if (surah.tafsir_text!.length > 1096) {
+				const _chunk = chunk(surah.tafsir_text!, 1096).map((v) => v.join(''));
+				_chunk.forEach((v, i) => {
+					results.push({
+						type: 'article',
+						id: `tafsir,${surah.surah_number}:${surah.ayat_number}#${i + 1}`,
+						title: `Tafsir Halaman ${i + 1} (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+						description: v.slice(0, 100) + ' ...',
+						input_message_content: {
+							message_text: v,
+						},
+					});
+				});
+			} else {
+				results.push({
+					type: 'article',
+					id: `tafsir,${surah.surah_number}:${surah.ayat_number}`,
+					title: `Tafsir (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+					description: surah.tafsir_text!.slice(0, 100) + ' ...',
+					input_message_content: {
+						message_text: surah.tafsir_text!,
+					},
+				});
+			}
+			// @ts-ignore
+			await ctx.answerInlineQuery(results);
+		} else {
+			await ctx.answerInlineQuery([
+				{
+					type: 'article',
+					id: `0:0`,
+					title: `Surat "${_surah}" tidak ditemukan.`,
+					description: 'Pastikan format dan ejaan sudah benar.',
+					input_message_content: {
+						message_text: 'https://t.me/fio_quran_bot',
+					},
+				},
+			]);
+		}
+	} catch (e) {
+		await ctx.answerInlineQuery([
+			{
+				type: 'article',
+				id: `-1:-1`,
+				title: `Maaf, terjadi kesalahan.`,
+				description: 'Silakan coba lagi nanti.',
+				input_message_content: {
+					message_text: 'https://t.me/fio_quran_bot',
+				},
+			},
+		]);
+		console.error(e);
+	}
+});
 bot.launch().then(() => console.log('Connected.'));

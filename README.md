@@ -1,6 +1,9 @@
 # quran-telegram-bot
 
-## thanks to
+## Demo
+[@fio_quran_bot](https://t.me/fio_quran_bot)
+
+## Thanks to
 - Allah SWT
 - Telegraf
 - LoLHuman

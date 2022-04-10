@@ -20,15 +20,12 @@
 		"almaida"
 	],
 	"6": [
-		"alanam",
 		"alanam"
 	],
 	"7": [
-		"alaraf",
 		"alaraf"
 	],
 	"8": [
-		"alanfal",
 		"alanfal"
 	],
 	"9": [
@@ -36,31 +33,24 @@
 		"altawba"
 	],
 	"10": [
-		"yunus",
 		"yunus"
 	],
 	"11": [
-		"hud",
 		"hud"
 	],
 	"12": [
-		"yusuf",
 		"yusuf"
 	],
 	"13": [
-		"arrad",
 		"arrad"
 	],
 	"14": [
-		"ibrahim",
 		"ibrahim"
 	],
 	"15": [
-		"alhijr",
 		"alhijr"
 	],
 	"16": [
-		"annahl",
 		"annahl"
 	],
 	"17": [
@@ -68,35 +58,27 @@
 		"alisraa"
 	],
 	"18": [
-		"alkahf",
 		"alkahf"
 	],
 	"19": [
-		"maryam",
 		"maryam"
 	],
 	"20": [
-		"taha",
 		"taha"
 	],
 	"21": [
-		"alanbiya",
 		"alanbiya"
 	],
 	"22": [
-		"alhajj",
 		"alhajj"
 	],
 	"23": [
-		"almuminun",
 		"almuminun"
 	],
 	"24": [
-		"annur",
 		"annur"
 	],
 	"25": [
-		"alfurqan",
 		"alfurqan"
 	],
 	"26": [
@@ -104,63 +86,48 @@
 		"ashshuara"
 	],
 	"27": [
-		"annaml",
 		"annaml"
 	],
 	"28": [
-		"alqasas",
 		"alqasas"
 	],
 	"29": [
-		"alankabut",
 		"alankabut"
 	],
 	"30": [
-		"arrum",
 		"arrum"
 	],
 	"31": [
-		"luqman",
 		"luqman"
 	],
 	"32": [
-		"assajdah",
 		"assajdah"
 	],
 	"33": [
-		"alahzab",
 		"alahzab"
 	],
 	"34": [
-		"saba",
 		"saba"
 	],
 	"35": [
-		"fatir",
 		"fatir"
 	],
 	"36": [
-		"yasin",
 		"yasin"
 	],
 	"37": [
-		"assaffat",
 		"assaffat"
 	],
 	"38": [
-		"sad",
 		"sad"
 	],
 	"39": [
-		"azzumar",
 		"azzumar"
 	],
 	"40": [
-		"ghafir",
 		"ghafir"
 	],
 	"41": [
-		"fussilat",
 		"fussilat"
 	],
 	"42": [
@@ -168,55 +135,44 @@
 		"ashshura"
 	],
 	"43": [
-		"azzukhruf",
 		"azzukhruf"
 	],
 	"44": [
-		"addukhan",
 		"addukhan"
 	],
 	"45": [
 		"aljasiyah",
-		"aljathiya"
+		"aljathiya",
+		"aljatsiyah"
 	],
 	"46": [
-		"alahqaf",
 		"alahqaf"
 	],
 	"47": [
-		"muhammad",
 		"muhammad"
 	],
 	"48": [
-		"alfath",
 		"alfath"
 	],
 	"49": [
-		"alhujurat",
 		"alhujurat"
 	],
 	"50": [
-		"qaf",
 		"qaf"
 	],
 	"51": [
-		"azzariyat",
 		"azzariyat"
 	],
 	"52": [
-		"attur",
 		"attur"
 	],
 	"53": [
-		"annajm",
 		"annajm"
 	],
 	"54": [
-		"alqamar",
 		"alqamar"
 	],
 	"55": [
-		"arrahman",
 		"arrahman"
 	],
 	"56": [
@@ -224,11 +180,9 @@
 		"alwaqia"
 	],
 	"57": [
-		"alhadid",
 		"alhadid"
 	],
 	"58": [
-		"almujadilah",
 		"almujadilah"
 	],
 	"59": [
@@ -240,15 +194,12 @@
 		"almumtahinah"
 	],
 	"61": [
-		"assaff",
 		"assaff"
 	],
 	"62": [
-		"aljumuah",
 		"aljumuah"
 	],
 	"63": [
-		"almunafiqun",
 		"almunafiqun"
 	],
 	"64": [
@@ -256,75 +207,59 @@
 		"attaghabun"
 	],
 	"65": [
-		"attalaq",
 		"attalaq"
 	],
 	"66": [
-		"attahrim",
 		"attahrim"
 	],
 	"67": [
-		"almulk",
 		"almulk"
 	],
 	"68": [
-		"alqalam",
 		"alqalam"
 	],
 	"69": [
-		"alhaqqah",
 		"alhaqqah"
 	],
 	"70": [
-		"almaarij",
 		"almaarij"
 	],
 	"71": [
-		"nuh",
 		"nuh"
 	],
 	"72": [
-		"aljinn",
 		"aljinn"
 	],
 	"73": [
-		"almuzzammil",
 		"almuzzammil"
 	],
 	"74": [
 		"almuddassir",
-		"almuddaththir"
+		"almuddaththir",
+		"almudatsir"
 	],
 	"75": [
-		"alqiyamah",
 		"alqiyamah"
 	],
 	"76": [
-		"alinsan",
 		"alinsan"
 	],
 	"77": [
-		"almursalat",
 		"almursalat"
 	],
 	"78": [
-		"annaba",
 		"annaba"
 	],
 	"79": [
-		"annaziat",
 		"annaziat"
 	],
 	"80": [
-		"abasa",
 		"abasa"
 	],
 	"81": [
-		"attakwir",
 		"attakwir"
 	],
 	"82": [
-		"alinfitar",
 		"alinfitar"
 	],
 	"83": [
@@ -336,15 +271,12 @@
 		"alinshiqaq"
 	],
 	"85": [
-		"alburuj",
 		"alburuj"
 	],
 	"86": [
-		"attariq",
 		"attariq"
 	],
 	"87": [
-		"alala",
 		"alala"
 	],
 	"88": [
@@ -352,11 +284,9 @@
 		"alghashiyah"
 	],
 	"89": [
-		"alfajr",
 		"alfajr"
 	],
 	"90": [
-		"albalad",
 		"albalad"
 	],
 	"91": [
@@ -364,11 +294,9 @@
 		"ashshams"
 	],
 	"92": [
-		"allail",
 		"allail"
 	],
 	"93": [
-		"adduha",
 		"adduha"
 	],
 	"94": [
@@ -376,15 +304,12 @@
 		"ashsharh"
 	],
 	"95": [
-		"attin",
 		"attin"
 	],
 	"96": [
-		"alalaq",
 		"alalaq"
 	],
 	"97": [
-		"alqadr",
 		"alqadr"
 	],
 	"98": [
@@ -392,31 +317,26 @@
 		"albayinah"
 	],
 	"99": [
-		"azzalzalah",
 		"azzalzalah"
 	],
 	"100": [
-		"aladiyat",
 		"aladiyat"
 	],
 	"101": [
-		"alqariah",
 		"alqariah"
 	],
 	"102": [
 		"attakasur",
+		"attakatsur",
 		"altakathur"
 	],
 	"103": [
-		"alasr",
 		"alasr"
 	],
 	"104": [
-		"alhumazah",
 		"alhumazah"
 	],
 	"105": [
-		"alfil",
 		"alfil"
 	],
 	"106": [
@@ -424,19 +344,17 @@
 		"quraish"
 	],
 	"107": [
-		"almaun",
 		"almaun"
 	],
 	"108": [
 		"alkausar",
-		"alkauthar"
+		"alkauthar",
+		"alkautsar"
 	],
 	"109": [
-		"alkafirun",
 		"alkafirun"
 	],
 	"110": [
-		"annasr",
 		"annasr"
 	],
 	"111": [
@@ -444,15 +362,12 @@
 		"almasad"
 	],
 	"112": [
-		"alikhlas",
 		"alikhlas"
 	],
 	"113": [
-		"alfalaq",
 		"alfalaq"
 	],
 	"114": [
-		"annas",
 		"annas"
 	]
 }

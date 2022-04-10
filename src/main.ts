@@ -1,5 +1,6 @@
 import { Telegraf } from 'telegraf';
 import { chunk } from 'lodash';
+import fetch from 'node-fetch';
 import * as fs from 'fs';
 require('dotenv').config();
 import type * as types from './types/types';
@@ -12,7 +13,9 @@ const surah_audio: types.surah_audio = JSON.parse(fs.readFileSync('./res/surah_a
 const surah_list = (JSON.parse(fs.readFileSync('./res/surah_list.json').toString()) as types.surah_list).map((v, i) => `${i + 1}. ${v}`).join('\n');
 
 let savingfileid = '';
+const ayat_audio_file_id_cache: { [s: string]: string } = {};
 const cache: { [s: string]: Surah } = {};
+
 class Surah {
 	ok: boolean = true;
 	surah_number?: number;
@@ -205,7 +208,41 @@ bot.on('callback_query', async (ctx) => {
 			}
 		} else if (state === 'audio') {
 			if (_ayat) {
-				await bot.telegram.sendAudio(ctx.from!.id, { url: `https://api.lolhuman.xyz/api/quran/audio/${_surah}/${_ayat}?apikey=${process.env.LOLHUMAN_API_KEY}` });
+				const downloadAndSend = async function () {
+					let f = await fetch(
+						`https://raw.githubusercontent.com/semarketir/quranjson/master/source/audio/${String(surah.surah_number).padStart(3, '0')}/${String(
+							surah.ayat_number
+						).padStart(3, '0')}.mp3`
+					);
+					if (f.headers.get('content-type') === 'audio/mpeg') {
+						const sent = await bot.telegram.sendAudio(ctx.from!.id, { source: f.body });
+						ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
+					} else {
+						const ghstatus = `${f.status}`;
+						f = await fetch(
+							`https://www.everyayah.com/data/Alafasy_128kbps/${String(surah.surah_number).padStart(3, '0')}${String(surah.ayat_number).padStart(
+								3,
+								'0'
+							)}.mp3`
+						);
+						if (f.headers.get('content-type') === 'audio/mpeg') {
+							const sent = await bot.telegram.sendAudio(ctx.from!.id, { source: f.body });
+							ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
+						} else {
+							throw new Error(`fetch to github and everyayah failed, status: GH${ghstatus} EA${f.status}`);
+						}
+					}
+				};
+				const file_id = ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`];
+				if (file_id) {
+					try {
+						await bot.telegram.sendAudio(ctx.from!.id, file_id);
+					} catch {
+						await downloadAndSend();
+					}
+				} else {
+					await downloadAndSend();
+				}
 			} else {
 				await bot.telegram.sendAudio(ctx.from!.id, surah.surah_audio_file_id!);
 			}

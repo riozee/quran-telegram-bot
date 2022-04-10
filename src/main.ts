@@ -11,6 +11,7 @@ const surah_info: types.surah_info = JSON.parse(fs.readFileSync('./res/surah_inf
 const surah_audio: types.surah_audio = JSON.parse(fs.readFileSync('./res/surah_audio.json').toString());
 const surah_list = (JSON.parse(fs.readFileSync('./res/surah_list.json').toString()) as types.surah_list).map((v, i) => `${i + 1}. ${v}`).join('\n');
 
+let savingfileid = '';
 const cache: { [s: string]: Surah } = {};
 class Surah {
 	ok: boolean = true;
@@ -126,16 +127,26 @@ function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir',
 const bot = new Telegraf(process.env.BOT_TOKEN || '');
 bot.on('text', async (ctx) => {
 	try {
-		const text = ctx.message.text.toLowerCase();
-		if (`${ctx.from.id}` === process.env.OWNER_USER_ID && text.startsWith('/eval')) {
-			return ctx.reply(require('util').format(eval(text.slice(6))));
+		let text = ctx.message.text;
+		if (text.startsWith('/getsurahaudiofileid')) {
+			savingfileid = `${ctx.from.id}`;
+			return ctx.reply('OK');
 		}
-		if (text.startsWith('/start'))
-			return bot.telegram.sendVideo(ctx.from.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
-				caption: start_message,
-				parse_mode: 'Markdown',
-			});
+		if (`${ctx.from.id}` === process.env.OWNER_USER_ID && text.startsWith('/eval')) {
+			return await ctx.reply(require('util').format(eval(text.slice(6))));
+		}
+
+		text = text.toLowerCase();
+		if (text.startsWith('/start')) {
+			return await bot.telegram
+				.sendVideo(ctx.from.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
+					caption: start_message,
+					parse_mode: 'Markdown',
+				})
+				.catch(() => ctx.reply(start_message, { parse_mode: 'Markdown' }));
+		}
 		if (text.startsWith('/daftarsurat')) return ctx.reply(surah_list);
+
 		const [_surah, _ayat] = text.split(':').map((v) => v.trim().replace(/[^a-z0-9]/g, ''));
 		const surah = new Surah(_surah, _ayat);
 		if (surah.ok) {
@@ -311,6 +322,20 @@ bot.on('inline_query', async (ctx) => {
 			},
 		]);
 		console.error(e);
+	}
+});
+bot.on('audio', (ctx) => {
+	if (savingfileid) {
+		if (`${ctx.message.from.id}` === savingfileid && ctx.message.audio.performer?.includes?.('Mishary Rashid')) {
+			const index = ctx.message.audio.file_name!.split('.')[0];
+			surah_audio[index] = ctx.message.audio.file_id;
+			ctx.reply('Saved ' + index);
+			if (Object.values(surah_audio).filter(Boolean).length === 114) {
+				fs.writeFileSync('./res/surah_audio.json', JSON.stringify(surah_audio, null, '\t'));
+				savingfileid = '';
+				ctx.reply('Done');
+			}
+		}
 	}
 });
 bot.launch().then(() => console.log('Connected.'));

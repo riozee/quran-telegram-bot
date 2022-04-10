@@ -10,6 +10,7 @@ const surah: types.surah = JSON.parse(fs.readFileSync('./res/surah.json').toStri
 const surah_names: types.surah_names = JSON.parse(fs.readFileSync('./res/surah_names.json').toString());
 const surah_info: types.surah_info = JSON.parse(fs.readFileSync('./res/surah_info.json').toString());
 const surah_audio: types.surah_audio = JSON.parse(fs.readFileSync('./res/surah_audio.json').toString());
+const surah_transliteration: types.surah_transliteration = JSON.parse(fs.readFileSync('./res/surah_transliteration.json').toString());
 const surah_list = (JSON.parse(fs.readFileSync('./res/surah_list.json').toString()) as types.surah_list).map((v, i) => `${i + 1}. ${v}`).join('\n');
 
 let savingfileid = '';
@@ -29,6 +30,7 @@ class Surah {
 	ayat_juz?: number;
 	arabic_text?: string;
 	translation_text?: string;
+	transliteration_text?: string;
 	tafsir_text?: string;
 	tafsir_source?: string;
 
@@ -56,6 +58,7 @@ class Surah {
 			})!.index;
 			this.arabic_text = info1.text[this.ayat_number];
 			this.translation_text = info1.translations.id.text[this.ayat_number];
+			this.transliteration_text = surah_transliteration[this.surah_number][this.ayat_number];
 			this.tafsir_text = info1.tafsir.id.kemenag.text[this.ayat_number];
 			this.tafsir_source = info1.tafsir.id.kemenag.source;
 		} else {
@@ -70,9 +73,19 @@ class Surah {
 	}
 }
 
-function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir'): { text: string; callback_data: string }[][];
-function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir', page: number, pageEnd: number): { text: string; callback_data: string }[][];
-function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir', page?: number, pageEnd?: number): { text: string; callback_data: string }[][] {
+function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir' | 'transliteration'): { text: string; callback_data: string }[][];
+function createButtons(
+	Surah: Surah,
+	state: 'arabic' | 'translation' | 'tafsir' | 'transliteration',
+	page: number,
+	pageEnd: number
+): { text: string; callback_data: string }[][];
+function createButtons(
+	Surah: Surah,
+	state: 'arabic' | 'translation' | 'tafsir' | 'transliteration',
+	page?: number,
+	pageEnd?: number
+): { text: string; callback_data: string }[][] {
 	const rows = [];
 	const _ayat = Surah.ayat_number!;
 	const _ayat_total = Surah.ayat_total!;
@@ -99,12 +112,15 @@ function createButtons(Surah: Surah, state: 'arabic' | 'translation' | 'tafsir',
 		rows.push([create(`< ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`), create(`ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
 	}
 
+	const _sa = `${_surah}:${_ayat}`;
 	if (state === 'arabic') {
-		rows.push([create('Terjemah', `translation,${_surah}:${_ayat}`), create('Tafsir', `tafsir,${_surah}:${_ayat}`)]);
+		rows.push([create('Terjemah', `translation,${_sa}`), create('Latin', `transliteration,${_sa}`), create('Tafsir', `tafsir,${_sa}`)]);
 	} else if (state === 'translation') {
-		rows.push([create('Arab', `arabic,${_surah}:${_ayat}`), create('Tafsir', `tafsir,${_surah}:${_ayat}`)]);
+		rows.push([create('Arab', `arabic,${_sa}`), create('Latin', `transliteration,${_sa}`), create('Tafsir', `tafsir,${_sa}`)]);
 	} else if (state === 'tafsir') {
-		rows.push([create('Arab', `arabic,${_surah}:${_ayat}`), create('Terjemah', `translation,${_surah}:${_ayat}`)]);
+		rows.push([create('Terjemah', `translation,${_sa}`), create('Latin', `transliteration,${_sa}`), create('Arab', `arabic,${_sa}`)]);
+	} else if (state === 'transliteration') {
+		rows.push([create('Terjemah', `translation,${_sa}`), create('Arab', `arabic,${_sa}`), create('Tafsir', `tafsir,${_sa}`)]);
 	}
 
 	rows.push([create('Audio ayat', `audio,${_surah}:${_ayat}`), create('Audio surat', `audio,${_surah}`)]);
@@ -164,7 +180,7 @@ bot.on('text', async (ctx) => {
 	} catch (e) {
 		console.error(e);
 		await ctx.reply('*Maaf, terjadi kesalahan.*\nSilakan coba lagi nanti.', { parse_mode: 'Markdown' });
-		await bot.telegram.sendMessage(process.env.OWNER_USER_ID!, String(e));
+		if (process.env.OWNER_USER_ID) await bot.telegram.sendMessage(process.env.OWNER_USER_ID, String(e));
 	}
 });
 bot.on('callback_query', async (ctx) => {
@@ -193,15 +209,15 @@ bot.on('callback_query', async (ctx) => {
 				});
 			}
 		} else if (state === 'tafsir') {
-			const text = surah.tafsir_text!;
+			const text = `${surah.tafsir_text}\n\n*Sumber: ${surah.tafsir_source}*`;
 			if (text.length > 1096) {
 				const chunk_text = chunk(text, 1096).map((v) => v.join(''));
-				await ctx.editMessageText(`${surah.info()}\n*Tafsir (Kemenag):*\n\n${chunk_text[page - 1]}`, {
+				await ctx.editMessageText(`${surah.info()}\n*Tafsir:*\n\n${chunk_text[page - 1]}`, {
 					reply_markup: { inline_keyboard: createButtons(surah, 'tafsir', page, chunk_text.length) },
 					parse_mode: 'Markdown',
 				});
 			} else {
-				await ctx.editMessageText(`${surah.info()}\n*Tafsir (Kemenag):*\n\n${text}`, {
+				await ctx.editMessageText(`${surah.info()}\n*Tafsir:*\n\n${text}`, {
 					reply_markup: { inline_keyboard: createButtons(surah, 'tafsir') },
 					parse_mode: 'Markdown',
 				});
@@ -246,8 +262,14 @@ bot.on('callback_query', async (ctx) => {
 			} else {
 				await bot.telegram.sendAudio(ctx.from!.id, surah.surah_audio_file_id!);
 			}
+		} else if (state === 'transliteration') {
+			await ctx.editMessageText(`${surah.info()}\n<strong>Transliterasi:</strong>\n\n${surah.transliteration_text!.replace(/(?<!^)<strong>.+?<\/strong>/g, '')}`, {
+				parse_mode: 'HTML',
+				reply_markup: { inline_keyboard: createButtons(surah, 'transliteration') },
+			});
 		}
 		await ctx.answerCbQuery();
+
 		if (!cache[cb_data]) {
 			cache[cb_data] = surah;
 			setTimeout((x) => delete cache[x], 300000, `${cb_data}`);
@@ -278,12 +300,25 @@ bot.on('inline_query', async (ctx) => {
 					title: `Arab (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
 					description: surah.arabic_text!.slice(0, 100) + ' ...',
 					input_message_content: {
-						message_text: surah.arabic_text!,
+						message_text: `Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number}\n\n` + surah.arabic_text!,
+					},
+				},
+				{
+					type: 'article',
+					id: `transliteration,${surah.surah_number}:${surah.ayat_number}`,
+					title: `Transliterasi (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
+					description: surah.transliteration_text!.replace(/<\/?[a-z]+?>/g, '').slice(0, 100) + ' ...',
+					input_message_content: {
+						message_text:
+							`Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number}\n\n` +
+							surah.transliteration_text!.replace(/(?<!^)<strong>.+?<\/strong>/g, ''),
+						parse_mode: 'HTML',
 					},
 				},
 			];
-			if (surah.translation_text!.length > 1096) {
-				const _chunk = chunk(surah.translation_text!, 1096).map((v) => v.join(''));
+
+			if (surah.translation_text!.length > 1000) {
+				const _chunk = chunk(surah.translation_text!, 1000).map((v) => v.join(''));
 				_chunk.forEach((v, i) => {
 					results.push({
 						type: 'article',
@@ -291,7 +326,7 @@ bot.on('inline_query', async (ctx) => {
 						title: `Terjemahan Halaman ${i + 1} (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
 						description: v.slice(0, 100) + ' ...',
 						input_message_content: {
-							message_text: v,
+							message_text: `Terjemahan Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number} (bagian ${i})\n\n` + v,
 						},
 					});
 				});
@@ -302,13 +337,13 @@ bot.on('inline_query', async (ctx) => {
 					title: `Terjemahan (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
 					description: surah.translation_text!.slice(0, 100) + ' ...',
 					input_message_content: {
-						message_text: surah.translation_text!,
+						message_text: `Terjemahan Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number}\n\n` + surah.translation_text!,
 					},
 				});
 			}
 
-			if (surah.tafsir_text!.length > 1096) {
-				const _chunk = chunk(surah.tafsir_text!, 1096).map((v) => v.join(''));
+			if (surah.tafsir_text!.length > 1000) {
+				const _chunk = chunk(surah.tafsir_text!, 1000).map((v) => v.join(''));
 				_chunk.forEach((v, i) => {
 					results.push({
 						type: 'article',
@@ -316,7 +351,7 @@ bot.on('inline_query', async (ctx) => {
 						title: `Tafsir Halaman ${i + 1} (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
 						description: v.slice(0, 100) + ' ...',
 						input_message_content: {
-							message_text: v,
+							message_text: `Tafsir (Kemenag) Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number} (bagian ${i})\n\n` + v,
 						},
 					});
 				});
@@ -327,7 +362,7 @@ bot.on('inline_query', async (ctx) => {
 					title: `Tafsir (${surah.surah_name}/${surah.surah_number}:${surah.ayat_number})`,
 					description: surah.tafsir_text!.slice(0, 100) + ' ...',
 					input_message_content: {
-						message_text: surah.tafsir_text!,
+						message_text: `Tafsir (Kemenag) Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number}\n\n` + surah.tafsir_text!,
 					},
 				});
 			}

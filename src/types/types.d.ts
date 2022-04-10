@@ -8,6 +8,12 @@ export type surah_names = {
 	[index: string]: string[];
 };
 
+export type surah_transliteration = {
+	[index: string]: {
+		[index: string]: string;
+	};
+};
+
 export type surah_info = {
 	source: string;
 	data: {

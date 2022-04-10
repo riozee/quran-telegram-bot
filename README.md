@@ -48,15 +48,9 @@ npm start
     -   The bot will respond with a `"Done"` if it has done saving the 114 audios.
         > [Optional] You can save the `file_id` of the short tutorial video in the channel to show it after the `/start` command.
         >
-        > - Forward the video to the bot.
-        > - Quote the video, and send this command:
-            ```
-            /eval ctx.message.reply_to_message.audio.file_id
-            ```
-            >- Copy the `file_id`, and paste it to the `.env` file by adding this line:
-            ```
-            START_VIDEO_TUTORIAL_FILE_ID="FILE_ID HERE"
-            ```
+        > -   Forward the video to the bot.
+        > -   Quote the video, and send this command: `/eval ctx.message.reply_to_message.animation.file_id`
+        > -   Copy the `file_id`, and paste it to the `.env` file by adding this line: `START_VIDEO_TUTORIAL_FILE_ID="FILE_ID HERE"`
 
 ## Thanks to
 

@@ -139,11 +139,11 @@ bot.on('text', async (ctx) => {
 		text = text.toLowerCase();
 		if (text.startsWith('/start')) {
 			return await bot.telegram
-				.sendVideo(ctx.from.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
+				.sendAnimation(ctx.from.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
 					caption: start_message,
 					parse_mode: 'Markdown',
 				})
-				.catch(() => ctx.reply(start_message, { parse_mode: 'Markdown' }));
+				.catch(() => ctx.reply(start_message, { parse_mode: 'Markdown', disable_web_page_preview: true }));
 		}
 		if (text.startsWith('/daftarsurat')) return ctx.reply(surah_list);
 
@@ -329,7 +329,6 @@ bot.on('audio', (ctx) => {
 		if (`${ctx.message.from.id}` === savingfileid && ctx.message.audio.performer?.includes?.('Mishary Rashid')) {
 			const index = ctx.message.audio.file_name!.split('.')[0];
 			surah_audio[index] = ctx.message.audio.file_id;
-			ctx.reply('Saved ' + index);
 			if (Object.values(surah_audio).filter(Boolean).length === 114) {
 				fs.writeFileSync('./res/surah_audio.json', JSON.stringify(surah_audio, null, '\t'));
 				savingfileid = '';

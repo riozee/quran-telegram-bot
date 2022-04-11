@@ -1,10 +1,11 @@
 # quran-telegram-bot
 
-<center> Contributions are Welcome! </center>
+Contributions are Welcome!
 
 ## Demo
 
 [@fio_quran_bot](https://t.me/fio_quran_bot)
+<img width="75%" src="http://telegra.ph/file/7fb77352bd87372bd0d52.jpg"/>
 
 ## Run
 

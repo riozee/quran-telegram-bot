@@ -217,7 +217,7 @@ bot.on('callback_query', async (ctx) => {
 				});
 			}
 		} else if (state === 'tafsir') {
-			const text = `${surah.tafsir_text}\n\n*Sumber: ${surah.tafsir_source}*`;
+			const text = `${surah.tafsir_text}\n\nSumber: ${surah.tafsir_source}`;
 			if (text.length > 1096) {
 				const chunk_text = chunk(text, 1096).map((v) => v.join(''));
 				await ctx.editMessageText(`${surah.info()}\n*Tafsir:*\n\n${chunk_text[page - 1]}`, {

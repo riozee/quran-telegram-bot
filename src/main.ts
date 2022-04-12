@@ -36,8 +36,11 @@ class Surah {
 
 	constructor(public _surah: string, public _ayat: string) {
 		if (isNaN(+_surah)) {
-			const _surah_number = Object.entries(surah_names).find((v) => v[1].includes(_surah))?.[0];
-			this.surah_number = Number(_surah_number) || undefined;
+			for (const surah in surah_names) {
+				if (surah_names[surah]?.includes?.(_surah)) {
+					this.surah_number = +surah;
+				}
+			}
 		} else {
 			if (1 <= +_surah && +_surah <= 114) this.surah_number = +_surah;
 		}
@@ -93,23 +96,23 @@ function createButtons(
 
 	if (page) {
 		if (page === 1) {
-			rows.push([create('halaman 2 >', `${state},${_surah}:${_ayat}#2`)]);
+			rows.push([create('Halaman 2 >', `${state},${_surah}:${_ayat}#2`)]);
 		} else if (page === pageEnd) {
-			rows.push([create(`< halaman ${page - 1}`, `${state},${_surah}:${_ayat}#${page - 1}`)]);
+			rows.push([create(`< Halaman ${page - 1}`, `${state},${_surah}:${_ayat}#${page - 1}`)]);
 		} else {
 			rows.push([
-				create(`< halaman ${page - 1}`, `${state},${_surah}:${_ayat}#${page - 1}`),
-				create(`halaman ${page + 1} >`, `${state},${_surah}:${_ayat}#${page + 1}`),
+				create(`< Halaman ${page - 1}`, `${state},${_surah}:${_ayat}#${page - 1}`),
+				create(`Halaman ${page + 1} >`, `${state},${_surah}:${_ayat}#${page + 1}`),
 			]);
 		}
 	}
 
 	if (_ayat === 1) {
-		rows.push([create(`ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
+		rows.push([create(`Ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
 	} else if (_ayat === _ayat_total) {
-		rows.push([create(`< ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`)]);
+		rows.push([create(`< Ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`)]);
 	} else {
-		rows.push([create(`< ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`), create(`ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
+		rows.push([create(`< Ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`), create(`ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
 	}
 
 	const _sa = `${_surah}:${_ayat}`;
@@ -147,18 +150,20 @@ const bot = new Telegraf(process.env.BOT_TOKEN || '');
 bot.on('text', async (ctx) => {
 	try {
 		let text = ctx.message.text;
-		if (text.startsWith('/getsurahaudiofileid')) {
-			savingfileid = `${ctx.from.id}`;
-			return ctx.reply('OK');
-		}
-		if (`${ctx.from.id}` === process.env.OWNER_USER_ID && text.startsWith('/eval')) {
-			return await ctx.reply(require('util').format(eval(text.slice(6))));
+		if (`${ctx.from.id}` === process.env.OWNER_USER_ID) {
+			if (text.startsWith('/getsurahaudiofileid')) {
+				savingfileid = `${ctx.chat.id}`;
+				return ctx.reply('OK');
+			}
+			if (text.startsWith('/eval')) {
+				return await ctx.reply(require('util').format(await eval(text.slice(6))));
+			}
 		}
 
-		text = text.toLowerCase();
+		text = text.replace(new RegExp(`@${ctx.botInfo.username}`, 'g'), '').toLowerCase();
 		if (text.startsWith('/start')) {
 			return await bot.telegram
-				.sendAnimation(ctx.from.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
+				.sendAnimation(ctx.chat.id, process.env.START_VIDEO_TUTORIAL_FILE_ID!, {
 					caption: start_message,
 					parse_mode: 'Markdown',
 				})
@@ -170,16 +175,19 @@ bot.on('text', async (ctx) => {
 		const surah = new Surah(_surah, _ayat);
 		if (surah.ok) {
 			await ctx.reply(`${surah.info()}\n\n${surah.arabic_text}`, { reply_markup: { inline_keyboard: createButtons(surah, 'arabic') } });
+			console.log(`${_surah}:${_ayat || '1'}`);
 		} else {
-			await ctx.reply(
-				`*Surat "${_surah}" tidak ditemukan.*\nPastikan format dan ejaan sudah benar atau gunakan perintah /daftarsurat untuk melihat daftar nama-nama surat.`,
-				{ parse_mode: 'Markdown' }
-			);
+			if (ctx.chat.type === 'private') {
+				await ctx.reply(
+					`*Surat "${_surah}" tidak ditemukan.*\nPastikan format dan ejaan sudah benar atau gunakan perintah /daftarsurat untuk melihat daftar nama-nama surat.`,
+					{ parse_mode: 'Markdown' }
+				);
+				console.log(`${_surah}:${_ayat || '1'}`);
+			}
 		}
-		console.log(`${_surah}:${_ayat}`);
 	} catch (e) {
 		console.error(e);
-		await ctx.reply('*Maaf, terjadi kesalahan.*\nSilakan coba lagi nanti.', { parse_mode: 'Markdown' });
+		if (ctx.chat.type === 'private') await ctx.reply('*Maaf, terjadi kesalahan.*\nSilakan coba lagi nanti.', { parse_mode: 'Markdown' });
 		if (process.env.OWNER_USER_ID) await bot.telegram.sendMessage(process.env.OWNER_USER_ID, String(e));
 	}
 });
@@ -225,34 +233,31 @@ bot.on('callback_query', async (ctx) => {
 		} else if (state === 'audio') {
 			if (_ayat) {
 				const downloadAndSend = async function () {
-					let f = await fetch(
-						`https://raw.githubusercontent.com/semarketir/quranjson/master/source/audio/${String(surah.surah_number).padStart(3, '0')}/${String(
-							surah.ayat_number
-						).padStart(3, '0')}.mp3`
-					);
-					if (f.headers.get('content-type') === 'audio/mpeg') {
-						const sent = await bot.telegram.sendAudio(ctx.from!.id, { source: f.body });
-						ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
-					} else {
-						const ghstatus = `${f.status}`;
-						f = await fetch(
-							`https://www.everyayah.com/data/Alafasy_128kbps/${String(surah.surah_number).padStart(3, '0')}${String(surah.ayat_number).padStart(
-								3,
-								'0'
-							)}.mp3`
-						);
-						if (f.headers.get('content-type') === 'audio/mpeg') {
-							const sent = await bot.telegram.sendAudio(ctx.from!.id, { source: f.body });
-							ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
-						} else {
-							throw new Error(`fetch to github and everyayah failed, status: GH${ghstatus} EA${f.status}`);
-						}
+					const surah_number = String(surah.surah_number).padStart(3, '0');
+					const ayat_number = String(surah.ayat_number).padStart(3, '0');
+					const links = [
+						`https://www.everyayah.com/data/Alafasy_128kbps/${surah_number}${ayat_number}.mp3`,
+						`https://raw.githubusercontent.com/semarketir/quranjson/master/source/audio/${surah_number}/${ayat_number}.mp3`,
+					];
+					let f;
+					for (const link of links) {
+						try {
+							f = await fetch(link);
+							if (f.headers?.get?.('content-type') === 'audio/mpeg') {
+								const sent = await bot.telegram.sendAudio(ctx.chat!.id, { source: f.body });
+								ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
+								break;
+							}
+						} catch {}
+					}
+					if (!f) {
+						throw new Error(`fetch to github and everyayah failed`);
 					}
 				};
 				const file_id = ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`];
 				if (file_id) {
 					try {
-						await bot.telegram.sendAudio(ctx.from!.id, file_id);
+						await bot.telegram.sendAudio(ctx.chat!.id, file_id);
 					} catch {
 						await downloadAndSend();
 					}
@@ -260,7 +265,7 @@ bot.on('callback_query', async (ctx) => {
 					await downloadAndSend();
 				}
 			} else {
-				await bot.telegram.sendAudio(ctx.from!.id, surah.surah_audio_file_id!);
+				await bot.telegram.sendAudio(ctx.chat!.id, surah.surah_audio_file_id!);
 			}
 		} else if (state === 'transliteration') {
 			await ctx.editMessageText(`${surah.info()}\n<strong>Transliterasi:</strong>\n\n${surah.transliteration_text!.replace(/(?<!^)<strong>.+?<\/strong>/g, '')}`, {

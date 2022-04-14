@@ -4,6 +4,10 @@ export type surah_audio = {
 	[index: string]: string;
 };
 
+export type surah_description = {
+	[index: string]: string;
+};
+
 export type surah_names = {
 	[index: string]: string[];
 };

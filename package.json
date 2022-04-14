@@ -1,6 +1,6 @@
 {
 	"name": "quran-telegram-bot",
-	"version": "1.5.6",
+	"version": "2.0.0",
 	"description": "None",
 	"main": "index.js",
 	"scripts": {

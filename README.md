@@ -16,15 +16,18 @@ Tested on Node.js v14.x.x with NPM v6.x.x, Windows 10 and Ubuntu 18.04.6 LTS.
 3. Clone this project
 
 ```
-git clone https://github.com/riozec/quran-telegram-bot
-cd quran-telegram-bot
+$ git clone https://github.com/riozec/quran-telegram-bot
+$ cd quran-telegram-bot
 ```
 
 4. Create a `.env` file, write down your bot token and API key here.
 
 ```
-touch .env
-nano .env
+# create .env file in the quran-telegram-bot folder
+$ touch .env
+
+# open and edit the .env file
+$ nano .env
 ```
 
 Write to `.env` file:
@@ -37,16 +40,16 @@ OWNER_USER_ID="YOUR USER ID"
 5. Build and run the bot.
 
 ```
-npm install
-npm run build
-npm start
+$ npm install
+$ npm run build
+$ npm start
 ```
 
 6.  Now the bot is running, but can't send surah audios. Because Telegram bot can't send more than 50 MB, you need a `file_id` of already uploaded file. In order to solve this, you need to manually forward all surah audios to the bot. Here's the steps:
 
-    -   Send `/getsurahaudiofileid` command to the bot. The bot will respond with an `"OK"`.
-    -   Open this [channel](https://t.me/fio_bot_quran_surah_audio) and forward all audios to the bot (114 audios).
-    -   The bot will respond with a `"Done"` if it has done saving the 114 audios.
+    1. Send `/getsurahaudiofileid` command to the bot. The bot will respond with an `"OK"`.
+    2. Open this [channel](https://t.me/fio_bot_quran_surah_audio) and forward all audios to the bot (114 audios).
+    3. The bot will respond with a `"Done"` if it has done saving the 114 audios.
 
 7.  (Optional) You can save the `file_id` of the short tutorial video in the channel to show it in the `/start` command.
     1. Forward the video to the bot.
@@ -68,6 +71,7 @@ npm start
 -   Everyayah.com
 -   Equran.id
 -   semarketir/quranjson
+-   rioastamal/quran-json
 -   And other sources of data, written in the files.
 
 ## Donation

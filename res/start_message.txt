@@ -1,9 +1,11 @@
 بِسْمِ اللهِ الرَّحْمَنِ الرَّحِيْمِ
 اَلسَّلَامُ عَلَيْكُمْ وَرَحْمَةُ اللهِ وَبَرَكَا تُهُ
 
-Bot ini membantu Anda membaca, mendengarkan, dan memahami Al-Qur'an di mana saja dan kapan saja dengan mudah. Cukup ketikkan saja nama/nomor suratnya, atau beserta ayat yang ingin Anda baca dengan format `surat:ayat`.
+Bot ini membantu Anda membaca, mendengarkan, dan memahami Al-Qur'an di mana saja dan kapan saja dengan mudah. Cukup ketikkan saja nama/nomor suratnya, atau beserta ayat yang ingin Anda baca dengan format "`surat:ayat`".
 
 Jika menemukan error/kesalahan, silakan hubungi [Facebook](https://facebook.com/crioze) atau [Telegram](https://t.me/riozec).
 
-[Kode sumber](https://github.com/riozec/quran-telegram-bot) - [Fio Bot News](https://t.me/fio_bot_news)
-*Donasi: 0877-2271-3834 (XL/DANA), 0851-5823-1152 (OVO/ShopeePay)*
+*Donasi:*
+ *- 0877-2271-3834 (DANA)*
+ *- 0851-5823-1152 (OVO/ShopeePay)*
+[Kode sumber](https://github.com/riozec/quran-telegram-bot) • [Fio Bot News](https://t.me/fio_bot_news)

@@ -11,6 +11,7 @@ const surah_names: types.surah_names = JSON.parse(fs.readFileSync('./res/surah_n
 const surah_info: types.surah_info = JSON.parse(fs.readFileSync('./res/surah_info.json').toString());
 const surah_audio: types.surah_audio = JSON.parse(fs.readFileSync('./res/surah_audio.json').toString());
 const surah_transliteration: types.surah_transliteration = JSON.parse(fs.readFileSync('./res/surah_transliteration.json').toString());
+const surah_description: types.surah_description = JSON.parse(fs.readFileSync('./res/surah_description.json').toString());
 const surah_list = (JSON.parse(fs.readFileSync('./res/surah_list.json').toString()) as types.surah_list).map((v, i) => `${i + 1}. ${v}`).join('\n');
 
 let savingfileid = '';
@@ -31,6 +32,7 @@ class Surah {
 	arabic_text?: string;
 	translation_text?: string;
 	transliteration_text?: string;
+	description_text?: string;
 	tafsir_text?: string;
 	tafsir_source?: string;
 
@@ -59,6 +61,7 @@ class Surah {
 				const [start, end]: number[] = Object.values(v.verse).map((v) => +v.slice(6)); // "verse_001"
 				return start <= this.ayat_number! && this.ayat_number! <= end;
 			})!.index;
+			this.description_text = surah_description[this.surah_number];
 			this.arabic_text = info1.text[this.ayat_number];
 			this.translation_text = info1.translations.id.text[this.ayat_number];
 			this.transliteration_text = surah_transliteration[this.surah_number][this.ayat_number];
@@ -71,7 +74,7 @@ class Surah {
 
 	info() {
 		if (this.ok) {
-			return `${this.surah_name} ${this.surah_name_arabic} (${this.surah_name_meaning})\n${this.surah_type}, surat ke-${this.surah_number}\nAyat ke-${this.ayat_number}, Juz ke-${this.ayat_juz}`;
+			return `${this.surah_name}/${this.surah_number} ${this.surah_name_arabic} (${this.surah_name_meaning})\n${this.surah_type}, Ayat ke-${this.ayat_number}, Juz ke-${this.ayat_juz}`;
 		}
 	}
 }
@@ -112,7 +115,7 @@ function createButtons(
 	} else if (_ayat === _ayat_total) {
 		rows.push([create(`< Ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`)]);
 	} else {
-		rows.push([create(`< Ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`), create(`ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
+		rows.push([create(`< Ayat ${_ayat - 1}`, `${state},${_surah}:${_ayat - 1}`), create(`Ayat ${_ayat + 1} >`, `${state},${_surah}:${_ayat + 1}`)]);
 	}
 
 	const _sa = `${_surah}:${_ayat}`;
@@ -126,7 +129,7 @@ function createButtons(
 		rows.push([create('Terjemah', `translation,${_sa}`), create('Arab', `arabic,${_sa}`), create('Tafsir', `tafsir,${_sa}`)]);
 	}
 
-	rows.push([create('Audio ayat', `audio,${_surah}:${_ayat}`), create('Audio surat', `audio,${_surah}`)]);
+	rows.push([create('Audio ayat', `audio,${_surah}:${_ayat}`), create(`Deskripsi surat`, `desc@${state},${_sa}`), create('Audio surat', `audio,${_surah}`)]);
 
 	if (_surah === 1) {
 		rows.push([create(`${surah[_surah + 1].name_latin}/${_surah + 1} >`, `${state},${_surah + 1}:1`)]);
@@ -176,6 +179,7 @@ bot.on('text', async (ctx) => {
 		if (surah.ok) {
 			await ctx.reply(`${surah.info()}\n\n${surah.arabic_text}`, { reply_markup: { inline_keyboard: createButtons(surah, 'arabic') } });
 			console.log(`${_surah}:${_ayat || '1'}`);
+			cache[`${surah.surah_number}:${surah.ayat_number}`] = surah;
 		} else {
 			if (ctx.chat.type === 'private') {
 				await ctx.reply(
@@ -199,8 +203,14 @@ bot.on('callback_query', async (ctx) => {
 		const [_surah, bar] = (foo || '').split(':');
 		const [_ayat, _page] = (bar || '').split('#');
 		const page: number = isNaN(+_page) ? 1 : +_page;
-		const surah = cache[cb_data] || new Surah(_surah, _ayat);
-		if (state === 'arabic') {
+		const surah = cache[`${_surah}:${_ayat}`] || new Surah(_surah, _ayat);
+
+		if (state.startsWith('desc@')) {
+			await ctx.editMessageText(`${surah.info()}\n\n${surah.description_text}`, {
+				parse_mode: 'HTML',
+				reply_markup: { inline_keyboard: [[{ text: 'Kembali', callback_data: `${state.slice(5)},${_surah}:${_ayat}` }]] },
+			});
+		} else if (state === 'arabic') {
 			await ctx.editMessageText(`${surah.info()}\n\n${surah.arabic_text}`, { reply_markup: { inline_keyboard: createButtons(surah, 'arabic') } });
 		} else if (state === 'translation') {
 			const text = surah.translation_text!;
@@ -244,7 +254,11 @@ bot.on('callback_query', async (ctx) => {
 						try {
 							f = await fetch(link);
 							if (f.headers?.get?.('content-type') === 'audio/mpeg') {
-								const sent = await bot.telegram.sendAudio(ctx.chat!.id, { source: f.body });
+								const sent = await bot.telegram.sendAudio(
+									ctx.chat!.id,
+									{ source: f.body },
+									{ caption: `Q.S. ${surah.surah_name}/${surah.surah_number}:${surah.ayat_number}` }
+								);
 								ayat_audio_file_id_cache[`${surah.surah_number}:${surah.ayat_number}`] = sent.audio.file_id;
 								break;
 							}
@@ -265,7 +279,7 @@ bot.on('callback_query', async (ctx) => {
 					await downloadAndSend();
 				}
 			} else {
-				await bot.telegram.sendAudio(ctx.chat!.id, surah.surah_audio_file_id!);
+				await bot.telegram.sendAudio(ctx.chat!.id, surah.surah_audio_file_id!, { caption: `Q.S. ${surah.surah_name}/${surah.surah_number}` });
 			}
 		} else if (state === 'transliteration') {
 			await ctx.editMessageText(`${surah.info()}\n<strong>Transliterasi:</strong>\n\n${surah.transliteration_text!.replace(/(?<!^)<strong>.+?<\/strong>/g, '')}`, {
@@ -275,15 +289,21 @@ bot.on('callback_query', async (ctx) => {
 		}
 		await ctx.answerCbQuery();
 
-		if (!cache[cb_data]) {
-			cache[cb_data] = surah;
-			setTimeout((x) => delete cache[x], 300000, `${cb_data}`);
+		const _sa = `${surah.surah_number}:${surah.ayat_number}`;
+		if (!cache[_sa]) {
+			cache[_sa] = surah;
+			setTimeout((x) => delete cache[x], 3600000, `${_sa}`);
 		}
 		console.log(cb_data);
 	} catch (e) {
-		console.error(e);
-		await ctx.answerCbQuery('Maaf, terjadi kesalahan. Silakan coba lagi nanti.');
-		await bot.telegram.sendMessage(process.env.OWNER_USER_ID!, String(e));
+		const se = String(e);
+		if (se.includes('message is not modified')) {
+			await ctx.answerCbQuery('Anda mengeklik terlalu cepat.');
+		} else {
+			console.error(e);
+			await ctx.answerCbQuery('Maaf, terjadi kesalahan. Silakan coba lagi nanti.');
+			await bot.telegram.sendMessage(process.env.OWNER_USER_ID!, String(e));
+		}
 	}
 });
 bot.on('inline_query', async (ctx) => {
@@ -296,7 +316,7 @@ bot.on('inline_query', async (ctx) => {
 				.toLowerCase()
 				.replace(/[^a-z0-9]/g, '')
 		);
-		const surah = new Surah(_surah, _ayat);
+		const surah = cache[`${_surah}:${_ayat}`] || new Surah(_surah, _ayat);
 		if (surah.ok) {
 			const results = [
 				{
@@ -373,6 +393,11 @@ bot.on('inline_query', async (ctx) => {
 			}
 			// @ts-ignore
 			await ctx.answerInlineQuery(results);
+			const _sa = `${surah.surah_number}:${surah.ayat_number}`;
+			if (!cache[_sa]) {
+				cache[_sa] = surah;
+				setTimeout((x) => delete cache[x], 3600000, `${_sa}`);
+			}
 		} else {
 			await ctx.answerInlineQuery([
 				{
